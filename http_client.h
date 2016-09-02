@@ -23,6 +23,9 @@ namespace qq_core{
         string toCookieString(){
             return this->name+"="+this->value;
         }
+        string toFieldString(){
+            return toCookieString();
+        }
     }Cookie,Field;
     class HttpClient {
     public:
@@ -45,6 +48,7 @@ namespace qq_core{
         list<Header> temp_headers_;
         list<Cookie> send_cookies_;
         list<Cookie> receive_cookies_;
+        list<Field> post_fields_;
         DataStore *requestData;
         const int kDefualtStoreSize = 1024 * 10;
         int response_code;
@@ -76,6 +80,11 @@ namespace qq_core{
          * @param cookie
          */
         void setSendCookies(Cookie cookie);
+        /**
+         * 设置请求域
+         * @param field
+         */
+        void setPostField(Field field);
         /**
          * 执行请求
          * @param method 请求方式 Get和Posts

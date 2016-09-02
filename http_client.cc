@@ -54,6 +54,9 @@ void qq_core::HttpClient::setSendCookies(Cookie cookie) {
     this->send_cookies_.push_back(cookie);
 }
 
+void qq_core::HttpClient::setPostField(qq_core::Field field) {
+    post_fields_.push_back(field);
+}
 bool qq_core::HttpClient::Execute(qq_core::HttpClient::RequestMethod method) {
     if(!handle_){
         return false;
@@ -65,7 +68,18 @@ bool qq_core::HttpClient::Execute(qq_core::HttpClient::RequestMethod method) {
     if(RequestMethod::Get == method){
         curl_easy_setopt(handle_,CURLOPT_HTTPGET,1L);
     } else{
-        curl_easy_setopt(handle_,CURLOPT_POST,true);
+        if(post_fields_.empty()){
+            curl_easy_setopt(handle_,CURLOPT_POST,true);
+        } else{
+            //设置请求域
+            string fields;
+            for(auto item:post_fields_){
+                fields += item.toFieldString()+"&";
+            }
+            fields[fields.length()-1] = '\0';
+            curl_easy_setopt(handle_,CURLOPT_POSTFIELDSIZE,fields.length()-1);
+            curl_easy_setopt(handle_,CURLOPT_COPYPOSTFIELDS,fields.c_str());
+        }
     }
     //设置请求头
     curl_slist *headers = NULL;
@@ -158,9 +172,11 @@ void qq_core::HttpClient::ResetClient() {
     temp_headers_.clear();
     send_cookies_.clear();
     receive_cookies_.clear();
+    post_fields_.clear();
     requestData->used = 0;
     response_code = 0;
 }
+
 
 
 
