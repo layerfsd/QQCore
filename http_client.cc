@@ -2,7 +2,7 @@
 // Created by lan on 16-9-2.
 //
 
-#include <cstring>
+
 #include "http_client.h"
 qq_core::HttpClient::HttpClient() {
     requestData = (DS*)malloc(sizeof(DS));
@@ -19,6 +19,7 @@ qq_core::HttpClient::~HttpClient() {
         }
         free(requestData);
     }
+
     if(handle_){
         curl_easy_cleanup(handle_);
     }
@@ -30,7 +31,7 @@ bool qq_core::HttpClient::Init() {
     }
     curl_easy_setopt(handle_,CURLOPT_SSL_VERIFYPEER, false);//绕过证书
     curl_easy_setopt(handle_,CURLOPT_SSL_VERIFYHOST,true);
-    curl_easy_setopt(handle_,CURLOPT_TIMEOUT,5L);//设置请求超时
+    curl_easy_setopt(handle_,CURLOPT_TIMEOUT,10L);//设置请求超时
     curl_easy_setopt(handle_,CURLOPT_WRITEFUNCTION,write_callback);
     curl_easy_setopt(handle_,CURLOPT_WRITEDATA,requestData);
     curl_easy_setopt(handle_,CURLOPT_FOLLOWLOCATION,0L);//禁止重定向
@@ -39,6 +40,8 @@ bool qq_core::HttpClient::Init() {
 }
 
 void qq_core::HttpClient::setURL(const string url) {
+    //复位客户端
+    ResetClient();
     this->url_ = url;
 }
 
@@ -58,27 +61,28 @@ void qq_core::HttpClient::setPostField(qq_core::Field field) {
     post_fields_.push_back(field);
 }
 bool qq_core::HttpClient::Execute(qq_core::HttpClient::RequestMethod method) {
-    if(!handle_){
+    if(!handle_ ){
         return false;
     }
-    //复位客户端
-    ResetClient();
     curl_easy_setopt(handle_,CURLOPT_URL,url_.c_str());//设置请求地址
+
+    struct curl_httppost* post = NULL;
+    struct curl_httppost* last = NULL;
+
     //设置请求方式
-    if(RequestMethod::Get == method){
+    if(RequestMethod::GET == method){
         curl_easy_setopt(handle_,CURLOPT_HTTPGET,1L);
     } else{
+        curl_easy_setopt(handle_, CURLOPT_ACCEPT_ENCODING, "");
         if(post_fields_.empty()){
             curl_easy_setopt(handle_,CURLOPT_POST,true);
         } else{
-            //设置请求域
-            string fields;
+            string buf = "";
             for(auto item:post_fields_){
-                fields += item.toFieldString()+"&";
-            }
-            fields[fields.length()-1] = '\0';
-            curl_easy_setopt(handle_,CURLOPT_POSTFIELDSIZE,fields.length()-1);
-            curl_easy_setopt(handle_,CURLOPT_COPYPOSTFIELDS,fields.c_str());
+                buf += item.toFieldString()+"&";}
+            buf[buf.length()-1] = '\0';
+            curl_easy_setopt(handle_,CURLOPT_POSTFIELDSIZE,buf.length()-1);
+            curl_easy_setopt(handle_,CURLOPT_COPYPOSTFIELDS,buf.c_str());
         }
     }
     //设置请求头
@@ -103,6 +107,9 @@ bool qq_core::HttpClient::Execute(qq_core::HttpClient::RequestMethod method) {
     CURLcode res = curl_easy_perform(handle_);
     if(CURLE_OK == res){
         GetResponseData();
+    }
+    if(post){
+        curl_formfree(post);
     }
     curl_slist_free_all(headers);
     return CURLE_OK == res;
@@ -161,11 +168,25 @@ void qq_core::HttpClient::GetResponseData() {
     if(CURLE_OK == curl_easy_getinfo(handle_,CURLINFO_COOKIELIST,&cookies)){
         curl_slist *temp = cookies;
         while (temp){
-            printf("%s\n",temp->data);
+            //printf("%s\n",temp->data);
+            ParseOneCookie(temp->data);
             temp = temp->next;
         }
     }
     curl_slist_free_all(cookies);
+}
+
+void qq_core::HttpClient::ParseOneCookie(const char *str_cookie) {
+    string str(str_cookie);
+    Cookie c;
+    //分别找到分隔符
+    unsigned long first_t = str.rfind('\t');
+    unsigned long second_t = str.rfind('\t',first_t-1);
+    //获取name和value值
+    c.name = str.substr(second_t+1,first_t - second_t-1);
+    c.value = str.substr(first_t+1);
+    receive_cookies_.push_back(c);
+    //printf("%s\n",c.toCookieString().c_str());
 }
 
 void qq_core::HttpClient::ResetClient() {
@@ -176,6 +197,22 @@ void qq_core::HttpClient::ResetClient() {
     requestData->used = 0;
     response_code = 0;
 }
+
+string qq_core::HttpClient::URLEncoded(string str) {
+    const char * ec = curl_easy_escape(handle_,str.c_str(),str.length());
+    return string(ec);
+}
+
+string qq_core::HttpClient::URLUnEncoded(const char *data, int size) {
+    int outlen = 0;
+    const char* un = curl_easy_unescape(handle_,data,size,&outlen);
+
+    string re(un,0,outlen);
+
+    return re;
+}
+
+
 
 
 

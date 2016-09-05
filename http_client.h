@@ -6,8 +6,8 @@
 #define QQCORE_HTTP_CLIENT_H
 
 #include <string>
+#include <string.h>
 #include <list>
-#include <map>
 #include <curl/curl.h>
 
 using namespace std;
@@ -50,10 +50,10 @@ namespace qq_core{
         list<Cookie> receive_cookies_;
         list<Field> post_fields_;
         DataStore *requestData;
-        const int kDefualtStoreSize = 1024 * 10;
+        static const int kDefualtStoreSize = 1024 * 10;
         int response_code;
     public:
-        enum RequestMethod{Get,Post};
+        enum RequestMethod{GET,POST};
     public:
         /**
          * 初始化客户端
@@ -113,6 +113,14 @@ namespace qq_core{
          */
         string GetDataByString();
         /**
+         * 对指定字符实行编码
+         * @param str
+         * @return
+         */
+        string URLEncoded(string str);
+
+        string URLUnEncoded(const char * data,int size);
+        /**
          * 关闭客户端
          */
         void close();
@@ -135,6 +143,11 @@ namespace qq_core{
          * 解析请求数据
          */
         void GetResponseData();
+        /**
+         * 解析Cookie值
+         * @param str_cookie解析一个Cookie值，保存到RecieveCookie中
+         */
+        void ParseOneCookie(const char * str_cookie);
     };
 }
 
