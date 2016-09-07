@@ -9,13 +9,16 @@
 #include "json/json.h"
 
 #include <iostream>
-#include <unistd.h>
+
 #include <map>
 #include <fstream>
+
+#include <unistd.h>
 namespace qq_core{
     class QQLogin {
     public:
-        QQLogin(HttpClient &client);;
+        QQLogin();
+        QQLogin(HttpClient &client);
         ~QQLogin();;
     public:
         enum QRC_Code{SUCCESS=0,INVALID= 65,VALID = 66,SCAN=67,UNKNOW_ERROR = 248};
@@ -23,6 +26,8 @@ namespace qq_core{
         HttpClient *client_;
         map<string,Header> useful_;
     public:
+
+        void set_client(HttpClient & client);
         /**
          * 获取登陆信令
          * @return

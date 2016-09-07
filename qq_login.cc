@@ -82,8 +82,10 @@ bool qq_core::QQLogin::CheckQRC(void (*listener)(QRC_Code, string)) {
         if(UNKNOW_ERROR == code || INVALID == code){
             return false;
         }
+
         //休息一秒
         sleep(1);
+
     }
 }
 
@@ -130,6 +132,10 @@ bool qq_core::QQLogin::CheckSig(string url) {
     auto cookies = client_->GetCookie();
     for(auto item:cookies){
         if(item.name == "p_skey"){
+            useful_.insert(pair<string, Header>(item.name,item));
+        }
+        if(item.name == "uin"){
+            item.value = item.value.substr(2,item.value.length()-2);
             useful_.insert(pair<string, Header>(item.name,item));
         }
     }
@@ -201,6 +207,14 @@ bool qq_core::QQLogin::Login() {
 
 map<string, qq_core::Header> qq_core::QQLogin::getUseful() {
     return useful_;
+}
+
+qq_core::QQLogin::QQLogin() {
+
+}
+
+void qq_core::QQLogin::set_client(qq_core::HttpClient &client) {
+    this->client_ = &client;
 }
 
 
