@@ -114,7 +114,7 @@ qq_core::QQLogin::QRC_Code qq_core::QQLogin::ParseCheckQRC(string &msg, string &
             returnMsg = "二维码认证中!";
             return SCAN;
         default:
-            returnMsg = "二维码认证中!";
+            returnMsg = "未知错误!";
             return UNKNOW_ERROR;
     }
 }

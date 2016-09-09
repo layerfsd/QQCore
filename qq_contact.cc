@@ -11,7 +11,7 @@ qq_core::QQContact::QQContact(qq_core::HttpClient &client, map<string, qq_core::
 qq_core::QQContact::~QQContact() {
 }
 
-bool qq_core::QQContact::GetUserFriends() {
+bool qq_core::QQContact::GetUserFriends(std::map<int,FriendGroup> &friendGroups,std::map<u_int64_t,FriendInfo> &friendInfos) {
     client_->setURL("http://s.web2.qq.com/api/get_user_friends2");
     client_->setTempHeaher(Header("Host","s.web2.qq.com"));
     client_->setTempHeaher(Header("Origin","http://s.web2.qq.com"));
@@ -29,9 +29,9 @@ bool qq_core::QQContact::GetUserFriends() {
     }
     string response = client_->GetDataByString();
     cout << response <<endl;
-    return PaserUserFriendsJson(response);
+    return PaserUserFriendsJson(response,friendGroups,friendInfos);
 }
-bool qq_core::QQContact::PaserUserFriendsJson(const string &json) {
+bool qq_core::QQContact::PaserUserFriendsJson(const string &json,std::map<int,FriendGroup> &friendGroups,std::map<u_int64_t,FriendInfo> &friendInfos) {
     Json::Reader reader;
     Json::Value root;
 
@@ -56,9 +56,8 @@ bool qq_core::QQContact::PaserUserFriendsJson(const string &json) {
         friendGroup.index = item["index"].asInt();
         friendGroup.sort = item["sort"].asInt();
         friendGroup.name = item["name"].asString();
-        AddFriendGroup(friendGroup);
+        friendGroups.insert(pair<int,FriendGroup>(friendGroup.index,friendGroup));
     }
-    std::map<u_int64_t ,FriendInfo> friendInfos;
     //获取好友所在分组
     Json::Value friends = result["friends"];
     count = friends.size();
@@ -100,7 +99,6 @@ bool qq_core::QQContact::PaserUserFriendsJson(const string &json) {
         int vipCode = item["is_vip"].asInt();
         friendInfos[id_t].is_vip = (0 == vipCode?false:true);
     }
-    AddAllFriendsInfo(friendInfos);
     return true;
 }
 const string qq_core::QQContact::GetHash(const long &uin, const string &ptwebqq) {
@@ -127,7 +125,7 @@ const string qq_core::QQContact::GetHash(const long &uin, const string &ptwebqq)
     return string(dl, 0, 16);
 }
 
-bool qq_core::QQContact::GetGroupList() {
+bool qq_core::QQContact::GetGroupList(std::map<u_int64_t ,GI> &groupInfos) {
     client_->setURL("http://s.web2.qq.com/api/get_group_name_list_mask2");
     client_->setTempHeaher(Header("Host","s.web2.qq.com"));
     client_->setTempHeaher(Header("Origin","http://s.web2.qq.com"));
@@ -145,10 +143,10 @@ bool qq_core::QQContact::GetGroupList() {
     }
     string response = client_->GetDataByString();
     cout << response <<endl;
-    return PaserGroupInfoJson(response);
+    return PaserGroupInfoJson(response,groupInfos);
 }
 
-bool qq_core::QQContact::PaserGroupInfoJson(const string &json) {
+bool qq_core::QQContact::PaserGroupInfoJson(const string &json,std::map<u_int64_t ,GI> &groupInfos) {
     Json::Reader reader;
     Json::Value root;
 
@@ -171,12 +169,12 @@ bool qq_core::QQContact::PaserGroupInfoJson(const string &json) {
         groupInfo.id = item["gid"].asUInt64();
         groupInfo.code = item["code"].asUInt64();
         groupInfo.name = item["name"].asString();
-        AddGroupInfo(groupInfo);
+        groupInfos.insert(pair<u_int64_t,GI>(groupInfo.id,groupInfo));
     }
     return true;
 }
 
-bool qq_core::QQContact::GetDicusList() {
+bool qq_core::QQContact::GetDicusList(std::map<u_int64_t ,DI> &discusInfos) {
     string url = "http://s.web2.qq.com/api/get_discus_list?clientid=53999199& psessionid="
                  +need_["psessionid"].value
                  +"vfwebqq="
@@ -191,10 +189,10 @@ bool qq_core::QQContact::GetDicusList() {
     }
     string response = client_->GetDataByString();
     cout << response <<endl;
-    return PaserDiscusInfoJson(response);
+    return PaserDiscusInfoJson(response,discusInfos);
 }
 
-bool qq_core::QQContact::PaserDiscusInfoJson(const string &json) {
+bool qq_core::QQContact::PaserDiscusInfoJson(const string &json,std::map<u_int64_t ,DI> &discusInfos) {
     Json::Reader reader;
     Json::Value root;
 
@@ -216,7 +214,7 @@ bool qq_core::QQContact::PaserDiscusInfoJson(const string &json) {
         DI di;
         di.id = item["did"].asUInt64();
         di.name = item["name"].asString();
-        AddDiscusnfo(di);
+        discusInfos.insert(pair<u_int64_t,DI>(di.id,di));
     }
     return true;
 }
@@ -224,7 +222,7 @@ bool qq_core::QQContact::PaserDiscusInfoJson(const string &json) {
 
 
 
-bool qq_core::QQContact::GetRecentList() {
+bool qq_core::QQContact::GetRecentList(std::map<u_int64_t ,RI> &recentList) {
     client_->setURL("http://d1.web2.qq.com/channel/get_recent_list2");
     client_->setTempHeaher(Header("Host","d1.web2.qq.com"));
     client_->setTempHeaher(Header("Origin","http://d1.web2.qq.com"));
@@ -241,10 +239,10 @@ bool qq_core::QQContact::GetRecentList() {
     }
     string response = client_->GetDataByString();
     cout << response <<endl;
-    return PaserRecentListJson(response);
+    return PaserRecentListJson(response,recentList);
 }
 
-bool qq_core::QQContact::PaserRecentListJson(const string &json) {
+bool qq_core::QQContact::PaserRecentListJson(const string &json,std::map<u_int64_t ,RI> &recentList) {
     Json::Reader reader;
     Json::Value root;
 
@@ -263,46 +261,6 @@ bool qq_core::QQContact::PaserRecentListJson(const string &json) {
     ri.id = result["uin"].asUInt64();
     ri.type = result["type"].asInt();
     return true;
-}
-
-void qq_core::QQContact::AddFriendGroup(const qq_core::FriendGroup friendGroup) {
-    this->friendGroups_.insert(std::pair<int,FriendGroup>(friendGroup.index,friendGroup));
-}
-
-void qq_core::QQContact::AddFriendInfo(const qq_core::FriendInfo friendInfo) {
-    this->friendInfos_.insert(std::pair<long,FriendInfo>(friendInfo.id,friendInfo));
-}
-
-qq_core::FriendGroup qq_core::QQContact::GetFriendGroupByIndex(int index) {
-    if(friendGroups_.find(index) == friendGroups_.end()){
-        return FriendGroup();
-    } else{
-        return friendGroups_[index];
-    }
-}
-
-qq_core::FriendInfo qq_core::QQContact::GetFriendInfoById(u_int64_t id) {
-    if(friendInfos_.find(id) == friendInfos_.end()){
-        return FriendInfo();
-    } else{
-        return friendInfos_[id];
-    }
-}
-
-void qq_core::QQContact::AddAllFriendsInfo(const std::map<u_int64_t, qq_core::FriendInfo> &friendInfos) {
-    this->friendInfos_ = friendInfos;
-}
-
-void qq_core::QQContact::AddGroupInfo(const qq_core::GroupInfo groupInfo) {
-    this->groupInfo_.insert(std::pair<u_int64_t,GI>(groupInfo.id,groupInfo));
-}
-
-void qq_core::QQContact::AddDiscusnfo(const qq_core::DiscusInfo discusInfo) {
-    this->discusInfo_.insert(std::pair<u_int64_t,DI>(discusInfo.id,discusInfo));
-}
-
-void qq_core::QQContact::AddRecent(const qq_core::RI ri) {
-    this->recentList_.insert(std::pair<u_int64_t,RI>(ri.id,ri));
 }
 
 

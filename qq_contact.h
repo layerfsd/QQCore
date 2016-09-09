@@ -16,34 +16,29 @@ namespace qq_core{
     private:
         HttpClient *client_;
         map<string,Header> need_;
-        std::map<int,FriendGroup> friendGroups_;
-        std::map<u_int64_t,FriendInfo> friendInfos_;
-        std::map<u_int64_t ,GI> groupInfo_;
-        std::map<u_int64_t ,DI> discusInfo_;
-        std::map<u_int64_t ,RI> recentList_;
     public:
         /**
          * 获取好友列表，分组信息
          * @return
          */
-        bool GetUserFriends();
+        bool GetUserFriends(std::map<int,FriendGroup> &friendGroups,std::map<u_int64_t,FriendInfo> &friendInfos);
         /**
          * 获取群列表
          * @return
          */
-        bool GetGroupList();
+        bool GetGroupList(std::map<u_int64_t ,GI> &groupList);
         /**
          * 获取讨论组列表
          * @return
          */
-        bool GetDicusList();
+        bool GetDicusList(std::map<u_int64_t ,DI> &discusList);
 
 
         /**
          * 获取历史聊天记录列表
          * @return
          */
-        bool GetRecentList();
+        bool GetRecentList(std::map<u_int64_t ,RI> &recentList);
 
     private:
         /**
@@ -58,71 +53,27 @@ namespace qq_core{
          * @param json 响应的Json数据
          * @return 是否解析成功
          */
-        bool PaserUserFriendsJson(const string &json);
+        bool PaserUserFriendsJson(const string &json,std::map<int,FriendGroup> &friendGroups,std::map<u_int64_t,FriendInfo> &friendList);
 
         /**
          * 解析获取群列表时得到的Json数据
          * @param json 响应的Json数据
          * @return 是否解析成功
          */
-        bool PaserGroupInfoJson(const string &json);
+        bool PaserGroupInfoJson(const string &json,std::map<u_int64_t ,GI> &groupInfos);
         /**
          * 解析获取讨论组列表时得到的Json数据
          * @param json 响应的Json数据
          * @return 是否解析成功
          */
-        bool PaserDiscusInfoJson(const string &json);
+        bool PaserDiscusInfoJson(const string &json,std::map<u_int64_t ,DI> &discusInfos);
 
         /**
          * 解析获取历史聊天列表时得到的Json数据
          * @param json 响应的Json数据
          * @return 是否解析成功
          */
-        bool PaserRecentListJson(const string &json);
-        /**
-         * 加入一个朋友分组信息
-         * @param friendGroup
-         */
-        void AddFriendGroup(const FriendGroup friendGroup);
-        /**
-         * 加入一个朋友的信息
-         * @param friendInfo
-         */
-        void AddFriendInfo(const FriendInfo friendInfo);
-        /**
-         * 通过索引获取信息
-         * @param index
-         * @return
-         */
-        FriendGroup GetFriendGroupByIndex(int index);
-        /**
-         * 通过QQ号获取好友基本信息
-         * @param id
-         * @return
-         */
-        FriendInfo GetFriendInfoById(u_int64_t id);
-        /**
-         * 加入所有的朋友信息
-         * @param friendInfos
-         * @return
-         */
-        void AddAllFriendsInfo(const std::map<u_int64_t,FriendInfo> &friendInfos);
-        /**
-         * 加入一个qq群基本信息
-         * @param groupInfo
-         */
-        void AddGroupInfo(const GroupInfo groupInfo);
-        /**
-         * 加入一个好友信息
-         * @param groupInfo
-         */
-        void AddDiscusnfo(const DiscusInfo discusInfo);
-        /**
-         * 加入最近聊天列表
-         * @param ri
-         */
-        void AddRecent(const RI ri);
-
+        bool PaserRecentListJson(const string &json,std::map<u_int64_t ,RI> &recentList);
     };
 };
 

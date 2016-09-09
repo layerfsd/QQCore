@@ -166,17 +166,21 @@ namespace qq_core{
          * @param result
          * @return
          */
-        ReceiveMessage(Json::Value result);
+        ReceiveMessage();
         ~ReceiveMessage();
     private:
         StructReceiveMessage message;
-        Json::Value result;
-    private:
+
+    public:
         /**
          * 解析消息
          * @return
          */
-        void ParseMessage();
+        void ParseMessage(Json::Value result);
+        /**
+         * 获取消息类型
+         * @return
+         */
         MessageType GetMessageType();
         /**
          * 获取消息

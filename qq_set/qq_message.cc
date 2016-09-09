@@ -46,16 +46,14 @@ qq_core::MessageType qq_core::SendMessage::GetMessageType() {
     return message.msg_type;
 }
 
-qq_core::ReceiveMessage::ReceiveMessage(Json::Value result) {
-    this->result = result;
-    ParseMessage();
+qq_core::ReceiveMessage::ReceiveMessage() {
 }
 
 qq_core::ReceiveMessage::~ReceiveMessage() {
 
 }
 
-void qq_core::ReceiveMessage::ParseMessage() {
+void qq_core::ReceiveMessage::ParseMessage(Json::Value result) {
     result = result[0];
     std::string poll_type = result["poll_type"].asString();
     Json::Value value = result["value"];

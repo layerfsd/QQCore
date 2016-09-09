@@ -8,17 +8,145 @@
 #include "qq_login.h"
 #include "qq_contact.h"
 #include "http_client.h"
+#include "qq_temp.h"
 namespace qq_core{
     class QQControl{
     public:
         QQControl();
         ~QQControl();
 
+    public:
+        enum LoginStatus{QRC_INVALID,QRC_NEED_SCAN,QRC_SCANED,SUCCESS,ERROR};
+
     private:
         HttpClient *client_;
         QQLogin * qqLogin_;
         QQContact *qqContact_;
+        QQTemp *qqTemp_;
 
+    public:
+        /**
+         * 获取登陆的二维码图片
+         * @param size
+         * @return
+         */
+        const char* GetQRCImg(int &size);
+        /**
+         * 将数据保存到文件中
+         * @param filePath
+         * @param data
+         * @param size
+         * @return
+         */
+        bool SaveImgToFile(string filePath,const char * data,int size);
+        /**
+         * 登陆QQ
+         * @param Listener消息回调函数
+         * @return
+         */
+        bool LoginQQ(void Listener(LoginStatus status,string msg));
+
+        /**
+         * 获取好友列表，分组信息
+         * @return
+         */
+        bool GetUserFriends(std::map<int,FriendGroup> &friendGroups,std::map<u_int64_t,FriendInfo> &friendInfos);
+        /**
+         * 获取群列表
+         * @return
+         */
+        bool GetGroupList(std::map<u_int64_t ,GI> &groupList);
+        /**
+         * 获取讨论组列表
+         * @return
+         */
+        bool GetDicusList(std::map<u_int64_t ,DI> &discusList);
+
+        /**
+         * 获取历史聊天记录列表
+         * @return
+         */
+        bool GetRecentList(std::map<u_int64_t ,RI> &recentList);
+        /**
+         * 获取所有在线好友列表
+         * @param onlines
+         * @return
+         */
+        bool GetOnLineBuddies(list<FriendOnLine> &onlines);
+        /**
+         * 获取QQ号码
+         * @param id 传入uin
+         * @return 失败返回-1
+         */
+        u_int64_t GetFriendQQNum(u_int64_t id);
+        /**
+         * 获取好友签名
+         * @param uin
+         * @return
+         */
+        string GetSingleLongNick(u_int64_t uin);
+        /**
+         * 获取自己的信息
+         * @return
+         */
+        bool GetSelfInfo(QI &qi);
+        /**
+         * 获取qq号码信息
+         * @param qi
+         * @return
+         */
+        bool GetQQInfo(u_int64_t uin,QI &qi);
+        /**
+         * 获取一个群的详细信息
+         * @param uin
+         * @param groupDetailInfo
+         * @return
+         */
+        bool GetGroupDetailInfo(u_int64_t uin, GroupDetailInfo &groupDetailInfo);
+        /**
+         * 获取讨论组的详细信息
+         * @param did
+         * @param dm
+         * @return
+         */
+        bool GetDiscusDetailInfo(u_int64_t did,DDI & ddi);
+        /**
+         * 获取用户的头像
+         * @param uin 传入uin
+         * @param size 返回数据大小
+         * @return 返回数据指针，为空则不成功
+         */
+        const char *GetUserFace(u_int64_t uin,int &size);
+        /**
+         * 更换qq状态
+         * @param status
+         * @return 是否更换成功
+         */
+        bool ChangeStatus(QQStatus status);
+        /**
+         * 轮询消息
+         * @return
+         */
+        bool Poll(ReceiveMessage &eceiveMessage);
+        /**
+         * 发送消息
+         * @param sendMessage
+         * @return
+         */
+        bool SendOneMessage(SendMessage &sendMessage);
+
+    private:
+        /**
+         * 二维码登陆回调函数
+         * @param code
+         * @param msg
+         */
+        static void listener(QQLogin::QRC_Code code, string msg);
+        /**
+         * 总回调函数
+         */
+        static void (*Listener)(LoginStatus, string);
+        std::string check_sig_url_;
     };
 };
 #endif //QQCORE_QQ_CONTROL_H

@@ -392,7 +392,7 @@ bool qq_core::QQTemp::ChangeStatus(qq_core::QQStatus status) {
     return 0 == retcode;
 }
 
-bool qq_core::QQTemp::Poll() {
+bool qq_core::QQTemp::Poll(ReceiveMessage &receiveMessage) {
     client_->setURL("https://d1.web2.qq.com/channel/poll2");
     client_->setTempHeaher(Header("Host","d1.web2.qq.com"));
     client_->setTempHeaher(Header("Origin","http://d1.web2.qq.com"));
@@ -417,7 +417,11 @@ bool qq_core::QQTemp::Poll() {
         return false;
     }
     Json::Value result = root["result"];
-    return false;
+    Json::Value errMsg = root["errmsg"];
+    if(!errMsg.isNull()){
+        receiveMessage.ParseMessage(result);
+    }
+    return true;
 }
 
 bool qq_core::QQTemp::SendOneMessage(qq_core::SendMessage &sendMessage) {

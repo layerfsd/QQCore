@@ -82,7 +82,7 @@ namespace qq_core{
          * 轮询消息
          * @return
          */
-        bool Poll();
+        bool Poll(ReceiveMessage &eceiveMessage);
         /**
          * 发送消息
          * @param sendMessage
