@@ -12,24 +12,16 @@ namespace qq_core{
     class QQContact {
     public:
         QQContact(HttpClient &client, map<string,Header> need);
-        QQContact();
         ~QQContact();
     private:
         HttpClient *client_;
         map<string,Header> need_;
-        QQFriend *qqFriends_;
-
+        std::map<int,FriendGroup> friendGroups_;
+        std::map<u_int64_t,FriendInfo> friendInfos_;
+        std::map<u_int64_t ,GI> groupInfo_;
+        std::map<u_int64_t ,DI> discusInfo_;
+        std::map<u_int64_t ,RI> recentList_;
     public:
-        /**
-         * 设置请求端必须
-         * @param client
-         */
-        void set_client(HttpClient &client);
-        /**
-         * 设置登陆时得到的信息
-         * @param need
-         */
-        void set_need(map<string,Header> need);
         /**
          * 获取好友列表，分组信息
          * @return
@@ -45,11 +37,7 @@ namespace qq_core{
          * @return
          */
         bool GetDicusList();
-        /**
-         * 获取自己的信息
-         * @return
-         */
-        bool GetSelfInfo(QI &qi);
+
 
         /**
          * 获取历史聊天记录列表
@@ -91,8 +79,50 @@ namespace qq_core{
          * @return 是否解析成功
          */
         bool PaserRecentListJson(const string &json);
-    protected:
-        bool PaserQQInfo(const string &json,QI &qi);
+        /**
+         * 加入一个朋友分组信息
+         * @param friendGroup
+         */
+        void AddFriendGroup(const FriendGroup friendGroup);
+        /**
+         * 加入一个朋友的信息
+         * @param friendInfo
+         */
+        void AddFriendInfo(const FriendInfo friendInfo);
+        /**
+         * 通过索引获取信息
+         * @param index
+         * @return
+         */
+        FriendGroup GetFriendGroupByIndex(int index);
+        /**
+         * 通过QQ号获取好友基本信息
+         * @param id
+         * @return
+         */
+        FriendInfo GetFriendInfoById(u_int64_t id);
+        /**
+         * 加入所有的朋友信息
+         * @param friendInfos
+         * @return
+         */
+        void AddAllFriendsInfo(const std::map<u_int64_t,FriendInfo> &friendInfos);
+        /**
+         * 加入一个qq群基本信息
+         * @param groupInfo
+         */
+        void AddGroupInfo(const GroupInfo groupInfo);
+        /**
+         * 加入一个好友信息
+         * @param groupInfo
+         */
+        void AddDiscusnfo(const DiscusInfo discusInfo);
+        /**
+         * 加入最近聊天列表
+         * @param ri
+         */
+        void AddRecent(const RI ri);
+
     };
 };
 

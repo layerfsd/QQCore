@@ -9,6 +9,7 @@
 #include <map>
 
 namespace qq_core {
+
     /**
      * 朋友分组信息
      */
@@ -21,7 +22,7 @@ namespace qq_core {
      * 单个朋友信息
      */
     typedef struct FriendInfo {
-        u_int64_t id = 0;//qq号码
+        u_int64_t id = 0;//uin,非qq号码
         int group_index = 0;//所在分组序号
         int face = 0;//头像id
         std::string nick_name = "";//qq昵称
@@ -35,6 +36,7 @@ namespace qq_core {
     typedef struct GroupInfo{
        std::string name = "";
         u_int64_t id = 0;
+        u_int64_t code = 0;
     }GI;
     /**
      * 群的基本信息
@@ -79,61 +81,73 @@ namespace qq_core {
         int type = 0;
         u_int64_t id = 0;
     }RI;
-    class QQFriend {
-    public:
-        QQFriend();
-        ~QQFriend();;
-    private:
-        std::map<int,FriendGroup> friendGroups_;
-        std::map<u_int64_t,FriendInfo> friendInfos_;
-        std::map<u_int64_t ,GI> groupInfo_;
-        std::map<u_int64_t ,DI> discusInfo_;
-        std::map<u_int64_t ,RI> recentList_;
-    public:
-        /**
-         * 加入一个朋友分组信息
-         * @param friendGroup
-         */
-        void AddFriendGroup(const FriendGroup friendGroup);
-        /**
-         * 加入一个朋友的信息
-         * @param friendInfo
-         */
-        void AddFriendInfo(const FriendInfo friendInfo);
-        /**
-         * 通过索引获取信息
-         * @param index
-         * @return
-         */
-        FriendGroup GetFriendGroupByIndex(int index);
-        /**
-         * 通过QQ号获取好友基本信息
-         * @param id
-         * @return
-         */
-        FriendInfo GetFriendInfoById(u_int64_t id);
-        /**
-         * 加入所有的朋友信息
-         * @param friendInfos
-         * @return
-         */
-        void AddAllFriendsInfo(const std::map<u_int64_t,FriendInfo> &friendInfos);
-        /**
-         * 加入一个qq群基本信息
-         * @param groupInfo
-         */
-        void AddGroupInfo(const GroupInfo groupInfo);
-        /**
-         * 加入一个好友信息
-         * @param groupInfo
-         */
-        void AddDiscusnfo(const DiscusInfo discusInfo);
-        /**
-         * 加入最近聊天列表
-         * @param ri
-         */
-        void AddRecent(const RI ri);
-    };
+    /**
+     * QQ所有状态
+     */
+    enum QQStatus{ONLINE,AWAY,CALLME,BUSY,SLIENT,HIDDEN,OFFLINE};
+    /**
+     * 在线好友列表
+     */
+    typedef struct FriendOnLine{
+        int client_type = 0;
+        std::string status = "";
+        u_int64_t id = 0;
+    }FL;
+    /**
+     * 群成员详细信息
+     */
+    typedef struct GroupMem{
+        u_int64_t uin = 0;
+        std::string card = "";
+        int flag = 0;
+        std::string nick = "";
+        std::string province = "";
+        std::string gender = "";
+        std::string contry = "";
+        std::string city = "";
+        int client_type = 0;
+        int stat = 0;
+        int is_vip = 0;
+        int vip_level = 0;
+    }GM;
+    /**
+     * 群的详细信息
+     */
+    typedef struct GroupDetailInfo{
+        std::map<u_int64_t ,GroupMem> members;
+        int class_ = 0;
+        u_int64_t code = 0;
+        u_int64_t create_time = 0;
+        int face = 0;
+        std::string fingermemo = "";
+        u_int64_t  flag = 0;
+        u_int64_t id = 0;
+        int level = 0;
+        std::string memo = "";
+        std::string name = 0;
+        int option = 0;
+        u_int64_t owner = 0;
+    }GDI;
+    /**
+     * 讨论组成员信息
+     */
+    typedef struct DiscusMem{
+        u_int64_t uin = 0;
+        u_int64_t ruin = 0;
+        std::string nick = "";
+    }DM;
+    /**
+     * 讨论组的详细信息
+     */
+    typedef struct DiscusDetailInfo{
+        u_int64_t did = 0;
+        std::string name = "";
+        std::map<u_int64_t ,DM> mems;
+    }DDI;
+    /**
+     * 消息类型
+     */
+    enum MessageType{USER,GROUP,DISCUS,UNKNOW_TYPE};
 };
 
 #endif //QQCORE_QQ_FRIEND_H

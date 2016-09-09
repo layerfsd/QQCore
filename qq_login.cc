@@ -209,13 +209,6 @@ map<string, qq_core::Header> qq_core::QQLogin::getUseful() {
     return useful_;
 }
 
-qq_core::QQLogin::QQLogin() {
-
-}
-
-void qq_core::QQLogin::set_client(qq_core::HttpClient &client) {
-    this->client_ = &client;
-}
 
 
 

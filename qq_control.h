@@ -9,7 +9,15 @@
 #include "qq_contact.h"
 #include "http_client.h"
 namespace qq_core{
-    class QQControl :private QQLogin, private QQContact{
+    class QQControl{
+    public:
+        QQControl();
+        ~QQControl();
+
+    private:
+        HttpClient *client_;
+        QQLogin * qqLogin_;
+        QQContact *qqContact_;
 
     };
 };

@@ -17,7 +17,6 @@
 namespace qq_core{
     class QQLogin {
     public:
-        QQLogin();
         QQLogin(HttpClient &client);
         ~QQLogin();;
     public:
@@ -27,7 +26,6 @@ namespace qq_core{
         map<string,Header> useful_;
     public:
 
-        void set_client(HttpClient & client);
         /**
          * 获取登陆信令
          * @return
