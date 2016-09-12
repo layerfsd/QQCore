@@ -5,6 +5,7 @@
 
 #include "http_client.h"
 qq_core::HttpClient::HttpClient() {
+    curl_global_init(CURL_GLOBAL_ALL);
     requestData = (DS*)malloc(sizeof(DS));
     requestData->data = (char*)malloc(sizeof(char)*kDefualtStoreSize);
     requestData->size = kDefualtStoreSize;
@@ -22,6 +23,7 @@ qq_core::HttpClient::~HttpClient() {
 
     if(handle_){
         curl_easy_cleanup(handle_);
+        curl_global_cleanup();
     }
 }
 bool qq_core::HttpClient::Init() {

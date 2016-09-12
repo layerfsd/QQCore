@@ -46,12 +46,15 @@ bool qq_core::QQTemp::ParseOnLineBuddies(string &json,list <qq_core::FriendOnLin
         return false;
     }
     Json::Value result = root["result"];
+    Json::Value item;
     int count = result.size();
     for(int i = 0 ; i < count ; i++){
+        item = result[i];
         FriendOnLine friendOnLine;
-        friendOnLine.id = result[i]["uin"].asUInt64();
-        friendOnLine.client_type = result[i]["client_type"].asInt();
-        friendOnLine.status = result[i]["status"].asString();
+        friendOnLine.id = item["uin"].asUInt64();
+        friendOnLine.client_type = item["client_type"].asInt();
+        friendOnLine.status = item["status"].asString();
+        onlines.push_back(friendOnLine);
     }
     return true;
 }
@@ -398,7 +401,7 @@ bool qq_core::QQTemp::Poll(ReceiveMessage &receiveMessage) {
     client_->setTempHeaher(Header("Origin","http://d1.web2.qq.com"));
     client_->setTempHeaher(Header("Referer","http://d1.web2.qq.com/proxy.html?v=20151105001&callback=1&id=2"));
 
-    string r = "{\"ptwebqq\":\""+need_["ptwebqq"].value+"\",\"clientid\":53999199,\"psessionid\":\"\",\"key\":\"\"}";
+    string r = "{\"ptwebqq\":\""+need_["ptwebqq"].value+"\",\"clientid\":53999199,\"psessionid\":\""+need_["psessionid"].value+"\",\"key\":\"\"}";
 
     client_->setPostField(Field("r",client_->URLEncoded(r)));
 
@@ -418,7 +421,7 @@ bool qq_core::QQTemp::Poll(ReceiveMessage &receiveMessage) {
     }
     Json::Value result = root["result"];
     Json::Value errMsg = root["errmsg"];
-    if(!errMsg.isNull()){
+    if(errMsg.isNull()){
         receiveMessage.ParseMessage(result);
     }
     return true;

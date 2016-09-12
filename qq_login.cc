@@ -146,7 +146,6 @@ bool qq_core::QQLogin::GetVFWebqq() {
     string url = "http://s.web2.qq.com/api/getvfwebqq?ptwebqq="
     +useful_["ptwebqq"].value
     +"&clientid=53999199&psessionid=&t=1472870102086";
-    cout << url << endl;
     client_->setURL(url);
     client_->setTempHeaher(Header("Host","s.web2.qq.com"));
     client_->setTempHeaher(Header("Referer","http://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1"));
@@ -155,7 +154,6 @@ bool qq_core::QQLogin::GetVFWebqq() {
     }
     string response = client_->GetDataByString();
     std::cout << client_->GetDataByString() <<endl;
-
     Json::Reader reader;
     Json::Value root;
     if(!reader.parse(response.c_str(),root)){
@@ -202,7 +200,7 @@ bool qq_core::QQLogin::Login() {
     useful_.insert(pair<string,Header>(string("psessionid"),Header(string("psessionid"),result["psessionid"].asString())));
     useful_.insert(pair<string,Header>(string("uin"),Header(string("uin"),result["uin"].asString())));
     useful_.insert(pair<string,Header>(string("login_vfwebqq"),Header(string("vfwebqq"),result["vfwebqq"].asString())));
-    return false;
+    return true;
 }
 
 map<string, qq_core::Header> qq_core::QQLogin::getUseful() {

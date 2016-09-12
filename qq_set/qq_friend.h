@@ -80,6 +80,7 @@ namespace qq_core {
     typedef struct RecentItem{
         int type = 0;
         u_int64_t id = 0;
+        std::string status = "";
     }RI;
     /**
      * QQ所有状态

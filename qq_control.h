@@ -12,11 +12,8 @@
 namespace qq_core{
     class QQControl{
     public:
-        QQControl();
+        QQControl(HttpClient &client);
         ~QQControl();
-
-    public:
-        enum LoginStatus{QRC_INVALID,QRC_NEED_SCAN,QRC_SCANED,SUCCESS,ERROR};
 
     private:
         HttpClient *client_;
@@ -44,8 +41,13 @@ namespace qq_core{
          * @param Listener消息回调函数
          * @return
          */
-        bool LoginQQ(void Listener(LoginStatus status,string msg));
-
+        bool LoginQQ(void Listener(QQLogin::QRC_Code status,string msg));
+        /**
+         * 获取登陆需要的信息
+         * @param url
+         * @return
+         */
+        bool GetControlNeed(string url);
         /**
          * 获取好友列表，分组信息
          * @return
@@ -55,7 +57,7 @@ namespace qq_core{
          * 获取群列表
          * @return
          */
-        bool GetGroupList(std::map<u_int64_t ,GI> &groupList);
+        bool GetGroupNameList(std::map<u_int64_t ,GI> &groupList);
         /**
          * 获取讨论组列表
          * @return
@@ -127,26 +129,13 @@ namespace qq_core{
          * 轮询消息
          * @return
          */
-        bool Poll(ReceiveMessage &eceiveMessage);
+        bool Poll(ReceiveMessage &receiveMessage);
         /**
          * 发送消息
          * @param sendMessage
          * @return
          */
         bool SendOneMessage(SendMessage &sendMessage);
-
-    private:
-        /**
-         * 二维码登陆回调函数
-         * @param code
-         * @param msg
-         */
-        static void listener(QQLogin::QRC_Code code, string msg);
-        /**
-         * 总回调函数
-         */
-        static void (*Listener)(LoginStatus, string);
-        std::string check_sig_url_;
     };
 };
 #endif //QQCORE_QQ_CONTROL_H

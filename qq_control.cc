@@ -4,14 +4,14 @@
 
 #include "qq_control.h"
 
-qq_core::QQControl::QQControl() {
-    this->client_ = new HttpClient();
+qq_core::QQControl::QQControl(HttpClient &client) {
+    this->client_ = &client;
     client_->setDefaultHeader(Header("Accept","*/*"));
     client_->setDefaultHeader(Header("Accept-Encoding","gzip, deflate, sdch"));
     client_->setDefaultHeader(Header("Accept-Language","en-US,en;q=0.5"));
     client_->setDefaultHeader(Header("Connection","keep-alive"));
     client_->setDefaultHeader(Header("User-Agent","Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36"));
-    this->qqLogin_ = new QQLogin(*client_);
+    this->qqLogin_ = new QQLogin(client);
 }
 
 qq_core::QQControl::~QQControl() {
@@ -43,29 +43,26 @@ bool qq_core::QQControl::SaveImgToFile(string filePath, const char *data, int si
     return qqLogin_->SaveImg(filePath,data,size);
 }
 
-bool qq_core::QQControl::LoginQQ(void (*Listener)(LoginStatus, string)) {
+bool qq_core::QQControl::LoginQQ(void (*Listener)(QQLogin::QRC_Code code, string)) {
     if(!qqLogin_){
         return false;
     }
-    this->Listener = Listener;
-    if(!qqLogin_->CheckQRC(this->listener)){
-        Listener(ERROR,"出现错误,重新登陆试试！");
-        return false;
-    }
-    if(!qqLogin_->CheckSig(this->check_sig_url_)){
-        Listener(ERROR,"出现错误,无法检查登陆信令,重新登陆试试！");
+    return qqLogin_->CheckQRC(Listener);
+}
+bool qq_core::QQControl::GetControlNeed(string url) {
+    if(!qqLogin_->CheckSig(url)){
         return false;
     }
     if(!qqLogin_->GetVFWebqq()){
-        Listener(ERROR,"出现错误,无法获取vfwebqq,重新登陆试试！");
         return false;
     }
-    Listener(SUCCESS,"登陆成功了");
+    if(!qqLogin_->Login()){
+        return false;
+    }
     qqContact_ = new QQContact(*client_,qqLogin_->getUseful());
     qqTemp_ = new QQTemp(*client_,qqLogin_->getUseful());
     return true;
 }
-
 bool qq_core::QQControl::GetUserFriends(map<int, qq_core::FriendGroup> &friendGroups,
                                         map<u_int64_t, qq_core::FriendInfo> &friendInfos) {
     if(!qqContact_){
@@ -74,11 +71,11 @@ bool qq_core::QQControl::GetUserFriends(map<int, qq_core::FriendGroup> &friendGr
     return qqContact_->GetUserFriends(friendGroups,friendInfos);
 }
 
-bool qq_core::QQControl::GetGroupList(map<u_int64_t, qq_core::GI> &groupList) {
+bool qq_core::QQControl::GetGroupNameList(map<u_int64_t, qq_core::GI> &groupList) {
     if(!qqContact_){
         return false;
     }
-    return qqContact_->GetGroupList(groupList);
+    return qqContact_->GetGroupNameList(groupList);
 }
 
 bool qq_core::QQControl::GetDicusList(map<u_int64_t, qq_core::DI> &discusList) {
@@ -172,22 +169,7 @@ bool qq_core::QQControl::SendOneMessage(qq_core::SendMessage &sendMessage) {
     return qqTemp_->SendOneMessage(sendMessage);
 }
 
-void qq_core::QQControl::listener(qq_core::QQLogin::QRC_Code code, string msg) {
-    switch(code) {
-        case QQLogin::SUCCESS:
-            break;
-        case QQLogin::INVALID:
-            Listener(QRC_INVALID,msg);
-            break;
-        case QQLogin::VALID:
-            Listener(QRC_NEED_SCAN,msg);
-            break;
-        case QQLogin::SCAN:
-            Listener(QRC_SCANED,msg);
-            break;
-        case QQLogin::UNKNOW_ERROR:
-            break;
-    }
-}
+
+
 
 

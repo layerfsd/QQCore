@@ -26,7 +26,7 @@ namespace qq_core{
          * 获取群列表
          * @return
          */
-        bool GetGroupList(std::map<u_int64_t ,GI> &groupList);
+        bool GetGroupNameList(std::map<u_int64_t ,GI> &groupList);
         /**
          * 获取讨论组列表
          * @return
@@ -60,13 +60,13 @@ namespace qq_core{
          * @param json 响应的Json数据
          * @return 是否解析成功
          */
-        bool PaserGroupInfoJson(const string &json,std::map<u_int64_t ,GI> &groupInfos);
+        bool PaserGroupNameListJson(const string &json,std::map<u_int64_t ,GI> &groupInfos);
         /**
          * 解析获取讨论组列表时得到的Json数据
          * @param json 响应的Json数据
          * @return 是否解析成功
          */
-        bool PaserDiscusInfoJson(const string &json,std::map<u_int64_t ,DI> &discusInfos);
+        bool PaserDiscusListJson(const string &json,std::map<u_int64_t ,DI> &discusInfos);
 
         /**
          * 解析获取历史聊天列表时得到的Json数据
