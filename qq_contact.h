@@ -11,34 +11,32 @@
 namespace qq_core{
     class QQContact {
     public:
-        QQContact(HttpClient &client, map<string,Header> need);
+        QQContact();
         ~QQContact();
     private:
-        HttpClient *client_;
-        map<string,Header> need_;
     public:
         /**
          * 获取好友列表，分组信息
          * @return
          */
-        bool GetUserFriends(std::map<int,FriendGroup> &friendGroups,std::map<u_int64_t,FriendInfo> &friendInfos);
+        bool GetUserFriends(map<string,Header> &need,FriendBaseInfo &friendBaseInfo);
         /**
          * 获取群列表
          * @return
          */
-        bool GetGroupNameList(std::map<u_int64_t ,GI> &groupList);
+        bool GetGroupNameList(map<string,Header> &need,std::map<u_int64_t ,GI> &groupList);
         /**
          * 获取讨论组列表
          * @return
          */
-        bool GetDicusList(std::map<u_int64_t ,DI> &discusList);
+        bool GetDicusList(map<string,Header> &need,std::map<u_int64_t ,DI> &discusList);
 
 
         /**
          * 获取历史聊天记录列表
          * @return
          */
-        bool GetRecentList(std::map<u_int64_t ,RI> &recentList);
+        bool GetRecentList(map<string,Header> &need,std::map<u_int64_t ,RI> &recentList);
 
     private:
         /**

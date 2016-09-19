@@ -31,7 +31,7 @@ namespace qq_core{
     public:
         HttpClient();
         ~HttpClient();
-
+        HttpClient *GetDefaultClient();
     private:
         /**
          * 数据存储结构体

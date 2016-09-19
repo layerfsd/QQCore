@@ -8,7 +8,12 @@
 #include "json/json.h"
 #include "qq_friend.h"
 #include <iostream>
+#include <sstream>
+
 namespace qq_core{
+
+    enum ContentMessageType{STRING,FACE};
+
     class QQMessage {
     public:
         QQMessage();
@@ -49,20 +54,30 @@ namespace qq_core{
 
         struct Content{
             Font font;
-            std::string msg = "";
-            Json::Value toJson(){
+            std::vector<std::pair<ContentMessageType,std::string>> msg;
+            //不知道为什么要转义
+            std::string toString(){
                 Json::Value root;
-                Json::Value temp;
+                //加入消息
+                for(auto item : msg){
+                    if(STRING == item.first){
+                        root.append(item.second);
+                    } else{
+                        Json::Value faceNum;
+                        faceNum.append("face");
+                        faceNum.append(std::atoi(item.second.c_str()));
+                        root.append(faceNum);
+                    }
+                }
+                //加入字体类型
                 Json::Value fontValue;
-                temp = "font";
-                fontValue.append(temp);
-                temp = font.toJson();
-                fontValue.append(temp);
-                temp = msg;
-                root.append(temp);
-                temp = fontValue;
-                root.append(temp);
-                return root;
+                fontValue.append("font");
+                fontValue.append(font.toJson());
+                root.append(fontValue);
+
+                Json::FastWriter writer;
+                std::string sourceMessage = writer.write(root);
+                return sourceMessage.substr(0,sourceMessage.length()-1);
             }
         };
         struct StructSendMessage{
@@ -86,7 +101,7 @@ namespace qq_core{
                     case DISCUS:
                         root["did"] = id;
                 }
-                root["content"] = content.toJson();
+                root["content"] = content.toString();
                 root["face"] =face;
                 root["clientid"] = client_id;
                 root["msg_id"] = msg_id;
@@ -114,14 +129,14 @@ namespace qq_core{
     public:
         /**
          * 构造类
-         * @param uin uin
+         * @param to_uin uin
          * @param msg_id
          * @param psessionid
          * @param type 消息类型
          * @param msg 要发送的消息
          * @return
          */
-        SendMessage(u_int64_t uin,u_int64_t msg_id,int face,std::string psessionid,MessageType type,std::string msg);
+        SendMessage(u_int64_t to_uin,u_int64_t msg_id,int face,MessageType type,std::vector<std::pair<ContentMessageType,std::string>> msg);
 
         ~SendMessage();
 
@@ -152,6 +167,12 @@ namespace qq_core{
          * @return
          */
         SendMessage &SetFontColor(std::string fontColor);
+        /**
+         * 设置pessionid
+         * @param psessionid
+         * @return
+         */
+        SendMessage &SetPsessionid(std::string psessionid);
         /**
          * 获取要发送的消息类型
          * @return
@@ -186,7 +207,7 @@ namespace qq_core{
          * 获取消息
          * @return
          */
-        std::string GetMessage();
+        std::vector<std::pair<qq_core::ContentMessageType,std::string>> GetMessage();
         /**
          * 当消息为群组或者讨论组时，表示群组id
          * @return

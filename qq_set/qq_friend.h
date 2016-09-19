@@ -30,6 +30,10 @@ namespace qq_core {
         bool is_vip = false;//是否为qq会员
         int vip_level = 0;//vip等级
     } FI;
+    typedef struct FriendBaseInfo{
+        std::map<int,FriendGroup> friendGroups;
+        std::map<u_int64_t,FriendInfo> friendInfos;
+    }FBI;
     /**
      * 群的基本信息
      */
@@ -125,7 +129,7 @@ namespace qq_core {
         u_int64_t id = 0;
         int level = 0;
         std::string memo = "";
-        std::string name = 0;
+        std::string name = "";
         int option = 0;
         u_int64_t owner = 0;
     }GDI;

@@ -20,11 +20,20 @@ qq_core::HttpClient::~HttpClient() {
         }
         free(requestData);
     }
-
     if(handle_){
         curl_easy_cleanup(handle_);
         curl_global_cleanup();
     }
+}
+qq_core::HttpClient *qq_core::HttpClient::GetDefaultClient() {
+    if(!Init()){
+        this->close();
+        return NULL;
+    }
+    curl_easy_setopt(handle_,CURLOPT_TCP_KEEPALIVE,1L);
+    curl_easy_setopt(handle_,CURLOPT_ACCEPT_ENCODING,"");
+    curl_easy_setopt(handle_,CURLOPT_USERAGENT,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36");
+    return this;
 }
 bool qq_core::HttpClient::Init() {
     handle_ = curl_easy_init();
@@ -33,11 +42,12 @@ bool qq_core::HttpClient::Init() {
     }
     curl_easy_setopt(handle_,CURLOPT_SSL_VERIFYPEER, false);//绕过证书
     curl_easy_setopt(handle_,CURLOPT_SSL_VERIFYHOST,true);
-    curl_easy_setopt(handle_,CURLOPT_TIMEOUT,10L);//设置请求超时
+    curl_easy_setopt(handle_,CURLOPT_TIMEOUT,100L);//设置请求超时
     curl_easy_setopt(handle_,CURLOPT_WRITEFUNCTION,write_callback);
     curl_easy_setopt(handle_,CURLOPT_WRITEDATA,requestData);
     curl_easy_setopt(handle_,CURLOPT_FOLLOWLOCATION,0L);//禁止重定向
-    curl_easy_setopt(handle_,CURLOPT_COOKIEFILE,"");//开启Cookie引擎
+    curl_easy_setopt(handle_,CURLOPT_COOKIEFILE,"cookie.txt");//开启Cookie引擎
+    curl_easy_setopt(handle_,CURLOPT_COOKIEJAR,"cookie.txt");//开启Cookie引擎
     return true;
 }
 
@@ -67,9 +77,6 @@ bool qq_core::HttpClient::Execute(qq_core::HttpClient::RequestMethod method) {
         return false;
     }
     curl_easy_setopt(handle_,CURLOPT_URL,url_.c_str());//设置请求地址
-
-    struct curl_httppost* post = NULL;
-    struct curl_httppost* last = NULL;
 
     //设置请求方式
     if(RequestMethod::GET == method){
@@ -109,9 +116,6 @@ bool qq_core::HttpClient::Execute(qq_core::HttpClient::RequestMethod method) {
     CURLcode res = curl_easy_perform(handle_);
     if(CURLE_OK == res){
         GetResponseData();
-    }
-    if(post){
-        curl_formfree(post);
     }
     curl_slist_free_all(headers);
     return CURLE_OK == res;

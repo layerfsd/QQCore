@@ -14,12 +14,10 @@
 namespace qq_core{
     class QQTemp {
     public:
-        QQTemp(HttpClient &client, map<string,Header> need);
+        QQTemp();
         ~QQTemp();
 
     private:
-        HttpClient *client_;
-        map<string,Header> need_;
 
     public:
         /**
@@ -27,68 +25,68 @@ namespace qq_core{
          * @param onlines
          * @return
          */
-        bool GetOnLineBuddies(list<FriendOnLine> &onlines);
+        bool GetOnLineBuddies(map<string,Header> &need,list<FriendOnLine> &onlines);
         /**
          * 获取QQ号码
          * @param id 传入uin
          * @return 失败返回-1
          */
-        u_int64_t GetFriendQQNum(u_int64_t id);
+        bool GetFriendQQNum(map<string,Header> &need,u_int64_t uin , u_int64_t &qq_num);
         /**
          * 获取好友签名
          * @param uin
          * @return
          */
-        string GetSingleLongNick(u_int64_t uin);
+        bool GetSingleLongNick(map<string,Header> &need,u_int64_t uin ,std::string &long_nick);
         /**
          * 获取自己的信息
          * @return
          */
-        bool GetSelfInfo(QI &qi);
+        bool GetSelfInfo(map<string,Header> &need,QI &qi);
         /**
          * 获取qq号码信息
          * @param qi
          * @return
          */
-        bool GetQQInfo(u_int64_t uin,QI &qi);
+        bool GetQQInfo(map<string,Header> &need,u_int64_t uin,QI &qi);
         /**
          * 获取一个群的详细信息
          * @param uin
          * @param groupDetailInfo
          * @return
          */
-        bool GetGroupDetailInfo(u_int64_t uin, GroupDetailInfo &groupDetailInfo);
+        bool GetGroupDetailInfo(map<string, Header> &need, u_int64_t uin, GroupDetailInfo &groupDetailInfo);
         /**
          * 获取讨论组的详细信息
          * @param did
          * @param dm
          * @return
          */
-        bool GetDiscusDetailInfo(u_int64_t did,DDI & ddi);
+        bool GetDiscusDetailInfo(map<string,Header> &need,u_int64_t did,DDI & ddi);
         /**
          * 获取用户的头像
          * @param uin 传入uin
          * @param size 返回数据大小
          * @return 返回数据指针，为空则不成功
          */
-        const char *GetUserFace(u_int64_t uin,int &size);
+        bool GetUserFace(map<string,Header> &need,u_int64_t uin,char * data,int &size);
         /**
          * 更换qq状态
          * @param status
          * @return 是否更换成功
          */
-        bool ChangeStatus(QQStatus status);
+        bool ChangeStatus(map<string,Header> &need,QQStatus status);
         /**
          * 轮询消息
          * @return
          */
-        bool Poll(ReceiveMessage &eceiveMessage);
+        bool Poll(map<string,Header> &need,bool receiveMessageListener(bool hasMessage,ReceiveMessage &receiveMessage));
         /**
          * 发送消息
          * @param sendMessage
          * @return
          */
-        bool SendOneMessage(SendMessage &sendMessage);
+        bool SendOneMessage(map<string,Header> &need,SendMessage sendMessage);
     private:
         /**
          * 解析在线好友列表

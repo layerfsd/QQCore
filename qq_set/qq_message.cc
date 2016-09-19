@@ -7,13 +7,11 @@
 qq_core::SendMessage::SendMessage(u_int64_t uin,
                                   u_int64_t msg_id,
                                   int face,
-                                  std::string psessionid,
                                   qq_core::MessageType type,
-                                  std::string msg) {
+                                  std::vector<std::pair<ContentMessageType,std::string>> msg) {
     message.id = uin;
     message.msg_id = msg_id;
     message.face = face;
-    message.psessionid = psessionid;
     message.msg_type = type;
     message.content.msg = msg;
 
@@ -46,6 +44,11 @@ qq_core::MessageType qq_core::SendMessage::GetMessageType() {
     return message.msg_type;
 }
 
+qq_core::SendMessage &qq_core::SendMessage::SetPsessionid(std::string psessionid) {
+    message.psessionid = psessionid;
+    return *this;
+}
+
 qq_core::ReceiveMessage::ReceiveMessage() {
 }
 
@@ -75,7 +78,7 @@ void qq_core::ReceiveMessage::ParseMessage(Json::Value result) {
     message.time = value["time"].asUInt64();
     message.to_uin = value["to_uin"].asUInt64();
     Json::Value msgContent = value["content"];
-    message.content.msg = msgContent[1].asString();
+    //解析字体类型
     Json::Value fontValue = msgContent[0];
     fontValue = fontValue[1];
     message.content.font.name = fontValue["name"].asString();
@@ -85,12 +88,24 @@ void qq_core::ReceiveMessage::ParseMessage(Json::Value result) {
     message.content.font.fontStyle.x = fonstyle[0].asInt();
     message.content.font.fontStyle.y = fonstyle[1].asInt();
     message.content.font.fontStyle.z = fonstyle[2].asInt();
+    //解析消息
+    int msgContentCount = msgContent.size();
+    for(int i = 1 ; i < msgContentCount;++i){
+        Json::Value msgType = msgContent[i];
+        if(msgType.isString()){
+            message.content.msg.push_back(std::make_pair(STRING,msgType.asString()));
+        }else{
+            std::stringstream ssm;
+            ssm << msgType[1].asInt();
+            message.content.msg.push_back(std::make_pair(FACE,ssm.str()));
+        }
+    }
     return ;
 }
 qq_core::MessageType qq_core::ReceiveMessage::GetMessageType() {
     return message.messageType;
 }
-std::string qq_core::ReceiveMessage::GetMessage() {
+std::vector<std::pair<qq_core::ContentMessageType,std::string>> qq_core::ReceiveMessage::GetMessage() {
     return message.content.msg;
 }
 

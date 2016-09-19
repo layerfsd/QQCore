@@ -4,32 +4,38 @@
 
 #include "qq_contact.h"
 
-qq_core::QQContact::QQContact(qq_core::HttpClient &client, map<string, qq_core::Header> need) {
-    this->client_ = &client;
-    this->need_ = need;
+qq_core::QQContact::QQContact() {
 }
 qq_core::QQContact::~QQContact() {
 }
 
-bool qq_core::QQContact::GetUserFriends(std::map<int,FriendGroup> &friendGroups,std::map<u_int64_t,FriendInfo> &friendInfos) {
-    client_->setURL("http://s.web2.qq.com/api/get_user_friends2");
-    client_->setTempHeaher(Header("Host","s.web2.qq.com"));
-    client_->setTempHeaher(Header("Origin","http://s.web2.qq.com"));
-    client_->setTempHeaher(Header("Referer","http://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1"));
-
-    Cookie uin = need_["uin"];
-    long qq_id = atoi(uin.value.c_str());
-
-    string r = "{\"vfwebqq\":\""+need_["vfwebqq"].value+"\",\"hash\":\""+GetHash(qq_id,need_["ptwebqq"].value)+"\"}";
-
-    client_->setPostField(Field("r",client_->URLEncoded(r)));
-
-    if(!client_->Execute(HttpClient::POST)){
+bool qq_core::QQContact::GetUserFriends(map<string,Header> &need,FriendBaseInfo &friendBaseInfo) {
+    HttpClient *client = new HttpClient();
+    client = client->GetDefaultClient();
+    if(NULL == client){
         return false;
     }
-    string response = client_->GetDataByString();
+    client->setURL("http://s.web2.qq.com/api/get_user_friends2");
+    client->setTempHeaher(Header("Host","s.web2.qq.com"));
+    client->setTempHeaher(Header("Origin","http://s.web2.qq.com"));
+    client->setTempHeaher(Header("Referer","http://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1"));
+
+    Cookie uin = need["uin"];
+    long qq_id = atoi(uin.value.c_str());
+
+    string r = "{\"vfwebqq\":\""+need["vfwebqq"].value+"\",\"hash\":\""+GetHash(qq_id,need["ptwebqq"].value)+"\"}";
+
+    client->setPostField(Field("r",client->URLEncoded(r)));
+
+    if(!client->Execute(HttpClient::POST)){
+        return false;
+    }
+    string response = client->GetDataByString();
     cout << response <<endl;
-    return PaserUserFriendsJson(response,friendGroups,friendInfos);
+    bool isOK = PaserUserFriendsJson(response,friendBaseInfo.friendGroups,friendBaseInfo.friendInfos);
+    client->close();
+    delete client;
+    return isOK;
 }
 bool qq_core::QQContact::PaserUserFriendsJson(const string &json,std::map<int,FriendGroup> &friendGroups,std::map<u_int64_t,FriendInfo> &friendInfos) {
     Json::Reader reader;
@@ -121,25 +127,35 @@ const string qq_core::QQContact::GetHash(const long &uin, const string &ptwebqq)
     return string(dl, 0, 16);
 }
 
-bool qq_core::QQContact::GetGroupNameList(std::map<u_int64_t ,GI> &groupInfos) {
-    client_->setURL("http://s.web2.qq.com/api/get_group_name_list_mask2");
-    client_->setTempHeaher(Header("Host","s.web2.qq.com"));
-    client_->setTempHeaher(Header("Origin","http://s.web2.qq.com"));
-    client_->setTempHeaher(Header("Referer","http://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1"));
-
-    Cookie uin = need_["uin"];
-    long qq_id = atoi(uin.value.c_str());
-
-    string r = "{\"vfwebqq\":\""+need_["vfwebqq"].value+"\",\"hash\":\""+GetHash(qq_id,need_["ptwebqq"].value)+"\"}";
-
-    client_->setPostField(Field("r",client_->URLEncoded(r)));
-
-    if(!client_->Execute(HttpClient::POST)){
+bool qq_core::QQContact::GetGroupNameList(map<string,Header> &need,std::map<u_int64_t ,GI> &groupInfos) {
+    HttpClient *client = new HttpClient();
+    client = client->GetDefaultClient();
+    if (NULL == client) {
         return false;
     }
-    string response = client_->GetDataByString();
+
+    client->setURL("http://s.web2.qq.com/api/get_group_name_list_mask2");
+    client->setTempHeaher(Header("Host","s.web2.qq.com"));
+    client->setTempHeaher(Header("Origin","http://s.web2.qq.com"));
+    client->setTempHeaher(Header("Referer","http://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1"));
+
+    Cookie uin = need["uin"];
+    long qq_id = atoi(uin.value.c_str());
+
+    string r = "{\"vfwebqq\":\""+need["vfwebqq"].value+"\",\"hash\":\""+GetHash(qq_id,need["ptwebqq"].value)+"\"}";
+
+    client->setPostField(Field("r",client->URLEncoded(r)));
+
+    if(!client->Execute(HttpClient::POST)){
+        return false;
+    }
+    string response = client->GetDataByString();
     cout << response <<endl;
-    return PaserGroupNameListJson(response,groupInfos);
+
+    bool isOK = PaserGroupNameListJson(response,groupInfos);
+    client->close();
+    delete client;
+    return isOK;
 }
 
 bool qq_core::QQContact::PaserGroupNameListJson(const string &json,std::map<u_int64_t ,GI> &groupInfos) {
@@ -170,22 +186,32 @@ bool qq_core::QQContact::PaserGroupNameListJson(const string &json,std::map<u_in
     return true;
 }
 
-bool qq_core::QQContact::GetDicusList(std::map<u_int64_t ,DI> &discusInfos) {
-    string url = "http://s.web2.qq.com/api/get_discus_list?clientid=53999199&psessionid="
-                 +need_["psessionid"].value
-                 +"&vfwebqq="
-                 +need_["vfwebqq"].value
-                 +"&t=1473237774012";
-    client_->setURL(url);
-    client_->setTempHeaher(Header("Host","s.web2.qq.com"));
-    client_->setTempHeaher(Header("Referer","http://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1"));
-
-    if(!client_->Execute(HttpClient::GET)){
+bool qq_core::QQContact::GetDicusList(map<string,Header> &need,std::map<u_int64_t ,DI> &discusList) {
+    HttpClient *client = new HttpClient();
+    client = client->GetDefaultClient();
+    if(NULL == client){
         return false;
     }
-    string response = client_->GetDataByString();
+
+    string url = "http://s.web2.qq.com/api/get_discus_list?clientid=53999199&psessionid="
+                 +need["psessionid"].value
+                 +"&vfwebqq="
+                 +need["vfwebqq"].value
+                 +"&t=1473237774012";
+    client->setURL(url);
+    client->setTempHeaher(Header("Host","s.web2.qq.com"));
+    client->setTempHeaher(Header("Referer","http://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1"));
+
+    if(!client->Execute(HttpClient::GET)){
+        return false;
+    }
+    string response = client->GetDataByString();
     cout << response <<endl;
-    return PaserDiscusListJson(response,discusInfos);
+
+    bool isOK = PaserDiscusListJson(response,discusList);
+    client->close();
+    delete client;
+    return isOK;
 }
 
 bool qq_core::QQContact::PaserDiscusListJson(const string &json,std::map<u_int64_t ,DI> &discusInfos) {
@@ -215,22 +241,33 @@ bool qq_core::QQContact::PaserDiscusListJson(const string &json,std::map<u_int64
     return true;
 }
 
-bool qq_core::QQContact::GetRecentList(std::map<u_int64_t ,RI> &recentList) {
-    client_->setURL("http://d1.web2.qq.com/channel/get_recent_list2");
-    client_->setTempHeaher(Header("Host","d1.web2.qq.com"));
-    //client_->setTempHeaher(Header("Origin","http://d1.web2.qq.com"));
-    client_->setTempHeaher(Header("Referer","http://d1.web2.qq.com/proxy.html?v=20151105001&callback=1&id=2"));
-
-    string r ="{\"vfwebqq\":\""+need_["vfwebqq"].value+"\",\"clientid\":53999199,\"psessionid\":\""+need_["psessionid"].value+"\"}";
-    cout << r <<endl;
-    client_->setPostField(Field("r",client_->URLEncoded(r)));
-
-    if(!client_->Execute(HttpClient::POST)){
+bool qq_core::QQContact::GetRecentList(map<string,Header> &need,std::map<u_int64_t ,RI> &recentList) {
+    HttpClient *client = new HttpClient();
+    client = client->GetDefaultClient();
+    if(NULL == client){
         return false;
     }
-    string response = client_->GetDataByString();
+
+    client->setURL("http://d1.web2.qq.com/channel/get_recent_list2");
+    client->setTempHeaher(Header("Host","d1.web2.qq.com"));
+    client->setTempHeaher(Header("Origin","http://d1.web2.qq.com"));
+    client->setTempHeaher(Header("Referer","http://d1.web2.qq.com/proxy.html?v=20151105001&callback=1&id=2"));
+
+    string r ="{\"vfwebqq\":\""+need["vfwebqq"].value+"\",\"clientid\":53999199,\"psessionid\":\""+need["psessionid"].value+"\"}";
+    cout << r <<endl;
+    client->setPostField(Field("r",client->URLEncoded(r)));
+
+    if(!client->Execute(HttpClient::POST)){
+        return false;
+    }
+    string response = client->GetDataByString();
     cout <<"get_recent" <<response <<endl;
-    return PaserRecentListJson(response,recentList);
+
+    bool isOK = PaserRecentListJson(response,recentList);
+
+    client->close();
+    delete client;
+    return isOK;
 }
 
 bool qq_core::QQContact::PaserRecentListJson(const string &json,std::map<u_int64_t ,RI> &recentList) {

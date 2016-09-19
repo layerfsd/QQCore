@@ -5,6 +5,8 @@
 #ifndef QQCORE_QQ_CONTROL_H
 #define QQCORE_QQ_CONTROL_H
 
+#include <thread>
+
 #include "qq_login.h"
 #include "qq_contact.h"
 #include "http_client.h"
@@ -12,7 +14,7 @@
 namespace qq_core{
     class QQControl{
     public:
-        QQControl(HttpClient &client);
+        QQControl();
         ~QQControl();
 
     private:
@@ -20,7 +22,7 @@ namespace qq_core{
         QQLogin * qqLogin_;
         QQContact *qqContact_;
         QQTemp *qqTemp_;
-
+        map<string,Header> need_;
     public:
         /**
          * 获取登陆的二维码图片
@@ -48,11 +50,12 @@ namespace qq_core{
          * @return
          */
         bool GetControlNeed(string url);
+        /////////////////////////////////////////
         /**
          * 获取好友列表，分组信息
          * @return
          */
-        bool GetUserFriends(std::map<int,FriendGroup> &friendGroups,std::map<u_int64_t,FriendInfo> &friendInfos);
+        bool GetUserFriends(FriendBaseInfo &friendBaseInfo);
         /**
          * 获取群列表
          * @return
@@ -69,6 +72,9 @@ namespace qq_core{
          * @return
          */
         bool GetRecentList(std::map<u_int64_t ,RI> &recentList);
+
+        //////////////////////////////
+
         /**
          * 获取所有在线好友列表
          * @param onlines
@@ -80,7 +86,7 @@ namespace qq_core{
          * @param id 传入uin
          * @return 失败返回-1
          */
-        u_int64_t GetFriendQQNum(u_int64_t id);
+        u_int64_t GetFriendQQNum(u_int64_t uin);
         /**
          * 获取好友签名
          * @param uin
@@ -100,11 +106,11 @@ namespace qq_core{
         bool GetQQInfo(u_int64_t uin,QI &qi);
         /**
          * 获取一个群的详细信息
-         * @param uin
+         * @param gcode 非uin
          * @param groupDetailInfo
          * @return
          */
-        bool GetGroupDetailInfo(u_int64_t uin, GroupDetailInfo &groupDetailInfo);
+        bool GetGroupDetailInfo(u_int64_t gcode, GroupDetailInfo &groupDetailInfo);
         /**
          * 获取讨论组的详细信息
          * @param did
@@ -129,7 +135,7 @@ namespace qq_core{
          * 轮询消息
          * @return
          */
-        bool Poll(ReceiveMessage &receiveMessage);
+        bool Poll(bool receiveMessageListener(bool hasMessage,ReceiveMessage &receiveMessage));
         /**
          * 发送消息
          * @param sendMessage
