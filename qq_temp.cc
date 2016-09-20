@@ -5,6 +5,7 @@
 #include <json/json.h>
 #include <sstream>
 #include "qq_temp.h"
+#include "qq_set/log_ini.h"
 
 qq_core::QQTemp::QQTemp() {
 }
@@ -31,7 +32,7 @@ bool qq_core::QQTemp::GetOnLineBuddies(map<string, Header> &need, list <FriendOn
         return false;
     }
     string response = client->GetDataByString();
-    std::cout << response << std::endl;
+    Log::O("获取在线好友列表->"+response);
     bool isOK = ParseOnLineBuddies(response, onlines);
     client->close();
     delete client;
@@ -84,15 +85,15 @@ bool qq_core::QQTemp::GetFriendQQNum(map<string, Header> &need, u_int64_t uin, u
         return false;
     }
     string response = client->GetDataByString();
-    cout << response << endl;
+
+    Log::O("获取用户的QQ号码->"+response);
+
     Json::Reader reader;
     Json::Value root;
-
     if (!reader.parse(response.c_str(), root)) {
         //Json数据有误
         return false;
     }
-
     int retcode = root["retcode"].asInt();
     if (0 != retcode) {
         //请求不成功
@@ -124,10 +125,11 @@ bool qq_core::QQTemp::GetSingleLongNick(map<string, Header> &need, u_int64_t uin
         return false;
     }
     string response = client->GetDataByString();
+    Log::O("获取用户的签名->"+response);
+
     client->close();
     delete client;
 
-    cout << response << endl;
     Json::Reader reader;
     Json::Value root;
 
@@ -163,7 +165,7 @@ bool qq_core::QQTemp::GetSelfInfo(map<string, Header> &need, QI &qi) {
         return false;
     }
     string response = client->GetDataByString();
-    cout << response << endl;
+    Log::O("获取自己的详细信息->"+response);
     client->close();
     delete client;
 
@@ -229,7 +231,7 @@ bool qq_core::QQTemp::GetQQInfo(map<string, Header> &need, u_int64_t uin, QI &qi
         return false;
     }
     string response = client->GetDataByString();
-    cout << response << endl;
+    Log::O("获取用户的详细信息->"+response);
     client->close();
     delete client;
     return ParseQQInfo(response, qi);
@@ -253,7 +255,7 @@ bool qq_core::QQTemp::GetGroupDetailInfo(map<string, Header> &need, u_int64_t gc
         return false;
     }
     string response = client->GetDataByString();
-    cout << response << endl;
+    Log::O("获取一个群的详细信息->"+response);
     client->close();
     delete client;
     return ParseGroupDetailInfo(response, groupDetailInfo);
@@ -349,7 +351,7 @@ bool qq_core::QQTemp::GetDiscusDetailInfo(map<string, Header> &need, u_int64_t d
         return false;
     }
     string response = client->GetDataByString();
-    std::cout << response << std::endl;
+    Log::O("获取一个讨论组的详细信息->"+response);
     client->close();
     delete client;
     return ParseDiscusDetailInfo(response, ddi);
@@ -407,6 +409,9 @@ bool qq_core::QQTemp::GetUserFace(map<string, Header> &need, u_int64_t uin, char
     if (!client->Execute(HttpClient::GET)) {
         return false;
     }
+    std::stringstream log;
+    log << "获取用户" << uin << "头像成功";
+    Log::O(log.str());
 
     const char *imgData = client->GetData(size);
     if (size > 0) {
@@ -466,6 +471,8 @@ bool qq_core::QQTemp::ChangeStatus(map<string, Header> &need, QQStatus status) {
         return false;
     }
 
+    Log::O("改变状态["+str+"]->"+response);
+
     int retcode = root["retcode"].asInt();
     return 0 == retcode;
 }
@@ -478,7 +485,6 @@ bool qq_core::QQTemp::Poll(map<string, Header> &need,bool receiveMessageListener
     }
     int poll_count = 0;
     while (true){
-        cout <<"poll start" <<poll_count++ << endl;
         client->setURL("https://d1.web2.qq.com/channel/poll2");
         client->setTempHeaher(Header("Host", "d1.web2.qq.com"));
         client->setTempHeaher(Header("Origin", "http://d1.web2.qq.com"));
@@ -494,7 +500,7 @@ bool qq_core::QQTemp::Poll(map<string, Header> &need,bool receiveMessageListener
         }
         string response = client->GetDataByString();
 
-        cout << response << endl;
+        Log::O("Poll->"+response);
         Json::Reader reader;
         Json::Value root;
 
@@ -516,11 +522,9 @@ bool qq_core::QQTemp::Poll(map<string, Header> &need,bool receiveMessageListener
         } else{
             receiveMessageListener(false,receiveMessage);
         }
-        cout <<"poll endl" <<poll_count << endl;
     }
     client->close();
     delete client;
-    cout <<"poll error" <<poll_count << endl;
     return false;
 }
 
@@ -548,8 +552,6 @@ bool qq_core::QQTemp::SendOneMessage(map<string, Header> &need, SendMessage send
     client->setTempHeaher(Header("Origin", "http://d1.web2.qq.com"));
     client->setTempHeaher(Header("Referer", "http://d1.web2.qq.com/proxy.html?v=20151105001&callback=1&id=2"));
 
-    cout << "send->|"<<sendMessage.PackageMessage() <<endl;
-
     client->setPostField(Field("r", client->URLEncoded(sendMessage.PackageMessage())));
 
     if (!client->Execute(HttpClient::POST)) {
@@ -559,7 +561,8 @@ bool qq_core::QQTemp::SendOneMessage(map<string, Header> &need, SendMessage send
     client->close();
     delete client;
 
-    cout << response << endl;
+    Log::O("发送消息成功->"+sendMessage.PackageMessage());
+
     Json::Reader reader;
     Json::Value root;
     if (!reader.parse(response.c_str(), root)) {

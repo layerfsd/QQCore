@@ -4,6 +4,7 @@
 
 
 #include "http_client.h"
+#include "qq_set/log_ini.h"
 qq_core::HttpClient::HttpClient() {
     curl_global_init(CURL_GLOBAL_ALL);
     requestData = (DS*)malloc(sizeof(DS));
@@ -46,8 +47,13 @@ bool qq_core::HttpClient::Init() {
     curl_easy_setopt(handle_,CURLOPT_WRITEFUNCTION,write_callback);
     curl_easy_setopt(handle_,CURLOPT_WRITEDATA,requestData);
     curl_easy_setopt(handle_,CURLOPT_FOLLOWLOCATION,0L);//禁止重定向
-    curl_easy_setopt(handle_,CURLOPT_COOKIEFILE,"cookie.txt");//开启Cookie引擎
-    curl_easy_setopt(handle_,CURLOPT_COOKIEJAR,"cookie.txt");//开启Cookie引擎
+    if("" == cookie_file_path_){
+        curl_easy_setopt(handle_,CURLOPT_COOKIEFILE,"cookie.txt");//开启Cookie引擎
+        curl_easy_setopt(handle_,CURLOPT_COOKIEJAR,"cookie.txt");//开启Cookie引擎
+    } else{
+        curl_easy_setopt(handle_,CURLOPT_COOKIEFILE,cookie_file_path_.c_str());//开启Cookie引擎
+        curl_easy_setopt(handle_,CURLOPT_COOKIEJAR,cookie_file_path_.c_str());//开启Cookie引擎
+    }
     return true;
 }
 
@@ -157,7 +163,7 @@ size_t qq_core::HttpClient::write_callback(char *ptr, size_t size, size_t nmemb,
     }
     if(mem->data == NULL) {
         /* out of memory! */
-        printf("not enough memory (realloc returned NULL)\n");
+        Log::O("out of memory");
         return 0;
     }
 
@@ -174,7 +180,6 @@ void qq_core::HttpClient::GetResponseData() {
     if(CURLE_OK == curl_easy_getinfo(handle_,CURLINFO_COOKIELIST,&cookies)){
         curl_slist *temp = cookies;
         while (temp){
-            //printf("%s\n",temp->data);
             ParseOneCookie(temp->data);
             temp = temp->next;
         }
@@ -192,7 +197,6 @@ void qq_core::HttpClient::ParseOneCookie(const char *str_cookie) {
     c.name = str.substr(second_t+1,first_t - second_t-1);
     c.value = str.substr(first_t+1);
     receive_cookies_.push_back(c);
-    //printf("%s\n",c.toCookieString().c_str());
 }
 
 void qq_core::HttpClient::ResetClient() {
@@ -212,9 +216,7 @@ string qq_core::HttpClient::URLEncoded(string str) {
 string qq_core::HttpClient::URLUnEncoded(const char *data, int size) {
     int outlen = 0;
     const char* un = curl_easy_unescape(handle_,data,size,&outlen);
-
     string re(un,0,outlen);
-
     return re;
 }
 

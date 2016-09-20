@@ -3,7 +3,10 @@
 //
 
 
+#include <chrono>
+#include <thread>
 #include "qq_login.h"
+#include "qq_set/log_ini.h"
 
 qq_core::QQLogin::QQLogin(qq_core::HttpClient &client) {
     this->client_ = &client;
@@ -22,8 +25,10 @@ bool qq_core::QQLogin::GetLoginSig() {
     for(auto item:cookies){
         if(item.name == "pt_login_sig"){
             useful_.insert(pair<string, Header>(item.name,item));
+            Log::O("获取登陆信令成功->"+item.value);
         }
     }
+
     return true;
 }
 
@@ -37,6 +42,7 @@ const char *qq_core::QQLogin::GetQRC(int &size) {
         size = 0;
         return NULL;
     }
+    Log::O("获取二维码成功");
     return client_->GetData(size);
 }
 
@@ -67,6 +73,7 @@ bool qq_core::QQLogin::CheckQRC(void (*listener)(QRC_Code, string)) {
         }
         string returnMsg;
         string msg = client_->GetDataByString();
+        Log::O("检查二维码->"+msg);
         QRC_Code code = ParseCheckQRC(msg,returnMsg);
         listener(code,returnMsg);
 
@@ -82,10 +89,8 @@ bool qq_core::QQLogin::CheckQRC(void (*listener)(QRC_Code, string)) {
         if(UNKNOW_ERROR == code || INVALID == code){
             return false;
         }
-
-        //休息一秒
-        sleep(1);
-
+        //线程休息一秒
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
 
@@ -133,12 +138,14 @@ bool qq_core::QQLogin::CheckSig(string url) {
     for(auto item:cookies){
         if(item.name == "p_skey"){
             useful_.insert(pair<string, Header>(item.name,item));
+            Log::O("检查登陆信令->"+item.value);
         }
         if(item.name == "uin"){
             item.value = item.value.substr(2,item.value.length()-2);
             useful_.insert(pair<string, Header>(item.name,item));
         }
     }
+
     return true;
 }
 
@@ -153,7 +160,6 @@ bool qq_core::QQLogin::GetVFWebqq() {
         return false;
     }
     string response = client_->GetDataByString();
-    std::cout << client_->GetDataByString() <<endl;
     Json::Reader reader;
     Json::Value root;
     if(!reader.parse(response.c_str(),root)){
@@ -164,6 +170,7 @@ bool qq_core::QQLogin::GetVFWebqq() {
         return false;
     }
     string vfwebqq = root["result"]["vfwebqq"].asString();
+    Log::O("获取vfwebqq->"+vfwebqq);
     useful_.insert(pair<string,Header>("vfwebqq",Header("vfwebqq",vfwebqq)));
     return true;
 }
@@ -183,7 +190,7 @@ bool qq_core::QQLogin::Login() {
         return false;
     }
     string response = client_->GetDataByString();
-    cout << response <<endl;
+    Log::O("第一次登陆->"+response);
     Json::Reader reader;
     Json::Value root;
     if(!reader.parse(response.c_str(),root)){

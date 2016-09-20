@@ -52,8 +52,17 @@ namespace qq_core{
         DataStore *requestData;
         static const int kDefualtStoreSize = 1024 * 10;
         int response_code;
+
+        static std::string cookie_file_path_ = "";
     public:
         enum RequestMethod{GET,POST};
+        /**
+         * 设置保存cookie文件的位置
+         * @param cookie_file_path
+         */
+        static void setCookieFilePath(std::string cookie_file_path){
+            HttpClient::cookie_file_path_ = cookie_file_path;
+        }
     public:
         /**
          * 初始化客户端
@@ -118,7 +127,12 @@ namespace qq_core{
          * @return
          */
         string URLEncoded(string str);
-
+        /**
+         * 对数据进行反编码
+         * @param data
+         * @param size
+         * @return
+         */
         string URLUnEncoded(const char * data,int size);
         /**
          * 关闭客户端
