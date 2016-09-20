@@ -4,7 +4,6 @@
 
 
 #include "http_client.h"
-#include "qq_set/log_ini.h"
 qq_core::HttpClient::HttpClient() {
     curl_global_init(CURL_GLOBAL_ALL);
     requestData = (DS*)malloc(sizeof(DS));
@@ -47,12 +46,12 @@ bool qq_core::HttpClient::Init() {
     curl_easy_setopt(handle_,CURLOPT_WRITEFUNCTION,write_callback);
     curl_easy_setopt(handle_,CURLOPT_WRITEDATA,requestData);
     curl_easy_setopt(handle_,CURLOPT_FOLLOWLOCATION,0L);//禁止重定向
-    if("" == cookie_file_path_){
+    if("" == cookie_file_path){
         curl_easy_setopt(handle_,CURLOPT_COOKIEFILE,"cookie.txt");//开启Cookie引擎
         curl_easy_setopt(handle_,CURLOPT_COOKIEJAR,"cookie.txt");//开启Cookie引擎
     } else{
-        curl_easy_setopt(handle_,CURLOPT_COOKIEFILE,cookie_file_path_.c_str());//开启Cookie引擎
-        curl_easy_setopt(handle_,CURLOPT_COOKIEJAR,cookie_file_path_.c_str());//开启Cookie引擎
+        curl_easy_setopt(handle_,CURLOPT_COOKIEFILE,cookie_file_path.c_str());//开启Cookie引擎
+        curl_easy_setopt(handle_,CURLOPT_COOKIEJAR,cookie_file_path.c_str());//开启Cookie引擎
     }
     return true;
 }
@@ -162,8 +161,6 @@ size_t qq_core::HttpClient::write_callback(char *ptr, size_t size, size_t nmemb,
         mem->size = newSize;
     }
     if(mem->data == NULL) {
-        /* out of memory! */
-        Log::O("out of memory");
         return 0;
     }
 
@@ -219,6 +216,7 @@ string qq_core::HttpClient::URLUnEncoded(const char *data, int size) {
     string re(un,0,outlen);
     return re;
 }
+
 
 
 

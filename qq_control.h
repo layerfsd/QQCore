@@ -11,10 +11,12 @@
 #include "qq_contact.h"
 #include "http_client.h"
 #include "qq_temp.h"
+#include "qq_set/log_ini.h"
+
 namespace qq_core{
     class QQControl{
     public:
-        QQControl();
+        QQControl(Log &log);
         ~QQControl();
 
     private:
@@ -23,6 +25,7 @@ namespace qq_core{
         QQContact *qqContact_;
         QQTemp *qqTemp_;
         map<string,Header> need_;
+        Log *log_ = NULL;
     public:
         /**
          * 获取登陆的二维码图片

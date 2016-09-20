@@ -3,9 +3,9 @@
 //
 
 #include "qq_contact.h"
-#include "qq_set/log_ini.h"
 
-qq_core::QQContact::QQContact() {
+qq_core::QQContact::QQContact(Log & log) {
+    this->log_ = &log;
 }
 qq_core::QQContact::~QQContact() {
 }
@@ -32,7 +32,11 @@ bool qq_core::QQContact::GetUserFriends(map<string,Header> &need,FriendBaseInfo 
         return false;
     }
     string response = client->GetDataByString();
-    Log::O("获取好友基本信息->"+response);
+    if(log_)
+    {
+        log_->O("获取好友基本信息->"+response);
+    }
+
     bool isOK = PaserUserFriendsJson(response,friendBaseInfo.friendGroups,friendBaseInfo.friendInfos);
     client->close();
     delete client;
@@ -151,7 +155,10 @@ bool qq_core::QQContact::GetGroupNameList(map<string,Header> &need,std::map<u_in
         return false;
     }
     string response = client->GetDataByString();
-    Log::O("获取群列表->"+response);
+    if(log_)
+    {
+        log_->O("获取群列表->"+response);
+    }
 
     bool isOK = PaserGroupNameListJson(response,groupInfos);
     client->close();
@@ -207,7 +214,11 @@ bool qq_core::QQContact::GetDicusList(map<string,Header> &need,std::map<u_int64_
         return false;
     }
     string response = client->GetDataByString();
-    Log::O("获取讨论组列表->"+response);
+
+    if(log_)
+    {
+        log_->O("获取讨论组列表->"+response);
+    }
     bool isOK = PaserDiscusListJson(response,discusList);
     client->close();
     delete client;
@@ -262,7 +273,10 @@ bool qq_core::QQContact::GetRecentList(map<string,Header> &need,std::map<u_int64
     }
     string response = client->GetDataByString();
 
-    Log::O("获取最近联系人列表->"+response);
+    if(log_)
+    {
+        log_->O("获取最近联系人列表->"+response);
+    }
 
     bool isOK = PaserRecentListJson(response,recentList);
 

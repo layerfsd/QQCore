@@ -3,8 +3,7 @@
 //
 
 #include "qq_control.h"
-
-qq_core::QQControl::QQControl() {
+qq_core::QQControl::QQControl(Log &log) {
     this->client_ = new HttpClient();
     if(!client_->Init()){
         throw ("can't init client");
@@ -14,7 +13,9 @@ qq_core::QQControl::QQControl() {
     client_->setDefaultHeader(Header("Accept-Language","en-US,en;q=0.5"));
     client_->setDefaultHeader(Header("Connection","keep-alive"));
     client_->setDefaultHeader(Header("User-Agent","Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36"));
-    this->qqLogin_ = new QQLogin(*client_);
+
+    log_ = &log;
+    this->qqLogin_ = new QQLogin(*client_,log);
 }
 
 qq_core::QQControl::~QQControl() {
@@ -68,8 +69,8 @@ bool qq_core::QQControl::GetControlNeed(string url) {
 
     need_ = qqLogin_->getUseful();
 
-    qqContact_ = new QQContact();
-    qqTemp_ = new QQTemp();
+    qqContact_ = new QQContact(*log_);
+    qqTemp_ = new QQTemp(*log_);
     return true;
 }
 
@@ -233,6 +234,8 @@ bool qq_core::QQControl::SendOneMessage(qq_core::SendMessage &sendMessage) {
     thread.detach();
     return true;
 }
+
+
 
 
 

@@ -7,7 +7,8 @@
 #include "qq_temp.h"
 #include "qq_set/log_ini.h"
 
-qq_core::QQTemp::QQTemp() {
+qq_core::QQTemp::QQTemp(Log &log) {
+    this->log_ = &log;
 }
 
 qq_core::QQTemp::~QQTemp() {
@@ -32,7 +33,10 @@ bool qq_core::QQTemp::GetOnLineBuddies(map<string, Header> &need, list <FriendOn
         return false;
     }
     string response = client->GetDataByString();
-    Log::O("获取在线好友列表->"+response);
+    if(log_)
+    {
+        log_->O("获取在线好友列表->"+response);
+    }
     bool isOK = ParseOnLineBuddies(response, onlines);
     client->close();
     delete client;
@@ -86,7 +90,10 @@ bool qq_core::QQTemp::GetFriendQQNum(map<string, Header> &need, u_int64_t uin, u
     }
     string response = client->GetDataByString();
 
-    Log::O("获取用户的QQ号码->"+response);
+    if(log_)
+    {
+        log_->O("获取用户的QQ号码->"+response);
+    }
 
     Json::Reader reader;
     Json::Value root;
@@ -125,7 +132,11 @@ bool qq_core::QQTemp::GetSingleLongNick(map<string, Header> &need, u_int64_t uin
         return false;
     }
     string response = client->GetDataByString();
-    Log::O("获取用户的签名->"+response);
+
+    if(log_)
+    {
+        log_->O("获取用户的签名->"+response);
+    }
 
     client->close();
     delete client;
@@ -165,7 +176,11 @@ bool qq_core::QQTemp::GetSelfInfo(map<string, Header> &need, QI &qi) {
         return false;
     }
     string response = client->GetDataByString();
-    Log::O("获取自己的详细信息->"+response);
+
+    if(log_)
+    {
+        log_->O("获取自己的详细信息->"+response);
+    }
     client->close();
     delete client;
 
@@ -231,7 +246,11 @@ bool qq_core::QQTemp::GetQQInfo(map<string, Header> &need, u_int64_t uin, QI &qi
         return false;
     }
     string response = client->GetDataByString();
-    Log::O("获取用户的详细信息->"+response);
+
+    if(log_)
+    {
+        log_->O("获取用户的详细信息->"+response);
+    }
     client->close();
     delete client;
     return ParseQQInfo(response, qi);
@@ -255,7 +274,11 @@ bool qq_core::QQTemp::GetGroupDetailInfo(map<string, Header> &need, u_int64_t gc
         return false;
     }
     string response = client->GetDataByString();
-    Log::O("获取一个群的详细信息->"+response);
+
+    if(log_)
+    {
+        log_->O("获取一个群的详细信息->"+response);
+    }
     client->close();
     delete client;
     return ParseGroupDetailInfo(response, groupDetailInfo);
@@ -351,7 +374,11 @@ bool qq_core::QQTemp::GetDiscusDetailInfo(map<string, Header> &need, u_int64_t d
         return false;
     }
     string response = client->GetDataByString();
-    Log::O("获取一个讨论组的详细信息->"+response);
+
+    if(log_)
+    {
+        log_->O("获取一个讨论组的详细信息->"+response);
+    }
     client->close();
     delete client;
     return ParseDiscusDetailInfo(response, ddi);
@@ -411,7 +438,11 @@ bool qq_core::QQTemp::GetUserFace(map<string, Header> &need, u_int64_t uin, char
     }
     std::stringstream log;
     log << "获取用户" << uin << "头像成功";
-    Log::O(log.str());
+
+    if(log_)
+    {
+        log_->O(log.str());
+    }
 
     const char *imgData = client->GetData(size);
     if (size > 0) {
@@ -471,7 +502,10 @@ bool qq_core::QQTemp::ChangeStatus(map<string, Header> &need, QQStatus status) {
         return false;
     }
 
-    Log::O("改变状态["+str+"]->"+response);
+    if(log_)
+    {
+        log_->O("改变状态["+str+"]->"+response);
+    }
 
     int retcode = root["retcode"].asInt();
     return 0 == retcode;
@@ -500,7 +534,10 @@ bool qq_core::QQTemp::Poll(map<string, Header> &need,bool receiveMessageListener
         }
         string response = client->GetDataByString();
 
-        Log::O("Poll->"+response);
+        if(log_)
+        {
+            log_->O("Poll->"+response);
+        }
         Json::Reader reader;
         Json::Value root;
 
@@ -561,7 +598,10 @@ bool qq_core::QQTemp::SendOneMessage(map<string, Header> &need, SendMessage send
     client->close();
     delete client;
 
-    Log::O("发送消息成功->"+sendMessage.PackageMessage());
+    if(log_)
+    {
+        log_->O("发送消息成功->"+sendMessage.PackageMessage());
+    }
 
     Json::Reader reader;
     Json::Value root;

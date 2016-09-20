@@ -14,11 +14,11 @@
 namespace qq_core{
     class QQTemp {
     public:
-        QQTemp();
+        QQTemp(Log &log);
         ~QQTemp();
 
     private:
-
+        Log *log_ = NULL;
     public:
         /**
          * 获取所有在线好友列表

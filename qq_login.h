@@ -17,13 +17,15 @@
 namespace qq_core{
     class QQLogin {
     public:
-        QQLogin(HttpClient &client);
+        QQLogin(HttpClient &client,Log & log);
         ~QQLogin();;
     public:
         enum QRC_Code{SUCCESS=0,INVALID= 65,VALID = 66,SCAN=67,UNKNOW_ERROR = 248};
     private:
         HttpClient *client_;
         map<string,Header> useful_;
+
+        Log *log_ = NULL;
     public:
 
         /**

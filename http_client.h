@@ -9,9 +9,11 @@
 #include <string.h>
 #include <list>
 #include <curl/curl.h>
+#include "qq_set/log_ini.h"
 
 using namespace std;
 namespace qq_core{
+    static std::string cookie_file_path = "";
     typedef struct Header{
         string name;
         string value;
@@ -53,16 +55,9 @@ namespace qq_core{
         static const int kDefualtStoreSize = 1024 * 10;
         int response_code;
 
-        static std::string cookie_file_path_ = "";
+        Log *log_;
     public:
         enum RequestMethod{GET,POST};
-        /**
-         * 设置保存cookie文件的位置
-         * @param cookie_file_path
-         */
-        static void setCookieFilePath(std::string cookie_file_path){
-            HttpClient::cookie_file_path_ = cookie_file_path;
-        }
     public:
         /**
          * 初始化客户端

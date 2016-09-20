@@ -11,9 +11,10 @@
 namespace qq_core{
     class QQContact {
     public:
-        QQContact();
+        QQContact(Log &log);
         ~QQContact();
     private:
+        Log *log_ = NULL;
     public:
         /**
          * 获取好友列表，分组信息
